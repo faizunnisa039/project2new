@@ -1,0 +1,56 @@
+pipeline{
+
+agent{
+label "ansiblenode"
+}    
+environment{
+AWS_EC2PEMFILE=credentials('ec2_pem_file')  
+}
+stages{
+ stage('CheckoutCode') {
+ steps{
+ git credentialsId: '17ae8c66-f9f2-49c5-9ad8-0081d07b40bb', url: 'https://github.com/zeeshanabu/jenkins-with-ansible.git'
+ }   
+ }   
+ stage('RunAnsiblePlaybook'){
+ steps{
+ sh "ansible-playbook -i inventory/canarabank.hosts --private-key=$AWS_EC2PEMFILE playbooks/pingServers.yaml --ssh-common-args='-o StrictHostKeyChecking=no"   
+ }   
+ }
+}//stageclosing
+}//nodeclosing
+
+From Chatgpt
+
+pipeline {
+agent {
+label "ansiblenode"
+}
+
+environment {
+AWS_EC2PEMFILE = credentials('ec2_pem_file')
+}
+
+stages {
+ stage('CheckoutCode') {
+ steps {
+ sh 'hostname'
+ sh 'whoami'
+ git credentialsId: '17ae8c66-f9f2-49c5-9ad8-0081d07b40bb', url: 'https://github.com/zeeshanabu/jenkins-with-ansible.git'
+  }
+}
+
+ stage('RunAnsiblePlaybook') {
+ steps {
+     withCredentials([file(credentialsId: 'ec2_pem_file', variable: 'AWS_EC2PEMFILE_PATH')]) {
+ sh '''
+ ansible-playbook -i inventory/canarabank.hosts --private-key="${AWS_EC2PEMFILE_PATH}" playbooks/pingServers.yaml --ssh-common-args="-o StrictHostKeyChecking=no"
+ '''
+ }
+ }
+ }
+}
+}
+
+
+
